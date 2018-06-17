@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
+
+	"github.com/gocarina/gocsv"
 
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
@@ -56,8 +59,8 @@ type ContactDetail struct {
 // Contacts type
 type Contacts []Contact
 
-// ContactDetails type
-type ContactDetails []ContactDetail
+// CDetails type
+type CDetails []ContactDetail
 
 // RootEndpoint gets a root
 func RootEndpoint(response http.ResponseWriter, request *http.Request) {
@@ -219,12 +222,68 @@ func DeleteContactEndpoint(response http.ResponseWriter, request *http.Request) 
 
 // UploadContactsEndpoint get a Contact
 func UploadContactsEndpoint(response http.ResponseWriter, request *http.Request) {
+	csvFile, _ := os.OpenFile("contacts.csv", os.O_RDWR|os.O_CREATE, os.ModePerm)
+	if err != nil {
+		panic(err)
+	}
+	defer csvFile.Close()
+	//reader := csv.NewReader(bufio.NewReader(csvFile))
+
+	contacts := []*Contact{}
+
+	if err := gocsv.UnmarshalFile(csvFile, &contacts); err != nil { // Load contacts from file
+		panic(err)
+	}
+	for _, contact := range contacts {
+		fmt.Println("Hello", contact.FirstName)
+	}
+
+	if _, err := csvFile.Seek(0, 0); err != nil { // Go to the start of the file
+		panic(err)
+	}
+
+	csvContent, err := gocsv.MarshalString(&contacts) // Get all contacts as CSV string
+
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(csvContent) // Display all contacts as CSV string
+
 	response.WriteHeader(200)
-	response.Write([]byte("Upload Contacts"))
+	response.Write([]byte(csvContent))
 }
 
 // DownloadContactsEndpoint get a Contact
 func DownloadContactsEndpoint(response http.ResponseWriter, request *http.Request) {
+	csvFile, _ := os.OpenFile("downloadcontacts.csv", os.O_RDWR|os.O_CREATE, os.ModePerm)
+	if err != nil {
+		panic(err)
+	}
+	defer csvFile.Close()
+	//reader := csv.NewReader(bufio.NewReader(csvFile))
+
+	contacts := []*Contact{}
+
+	if err := gocsv.UnmarshalFile(csvFile, &contacts); err != nil { // Load contacts from file
+		panic(err)
+	}
+	for _, contact := range contacts {
+		fmt.Println("Hello", contact.FirstName)
+	}
+
+	if _, err := csvFile.Seek(0, 0); err != nil { // Go to the start of the file
+		panic(err)
+	}
+
+	db.Where("deleted_at is NULL").Preload("ContactDetails").Find(&contacts)
+
+	csvContent, err := gocsv.MarshalString(&contacts) // Get all contacts as CSV string
+	err = gocsv.MarshalFile(&contacts, csvFile)       // Use this to save the CSV back to the file
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(csvContent) // Display all contacts as CSV string
+
 	response.WriteHeader(200)
-	response.Write([]byte("Download Contacts"))
+	response.Write([]byte(csvContent))
 }
