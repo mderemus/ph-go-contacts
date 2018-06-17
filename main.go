@@ -30,7 +30,7 @@ func main() {
 	router.HandleFunc("/contact", GetContactsEndpoint).Methods("GET")
 	router.HandleFunc("/contact/{id}", GetContactEndpoint).Methods("GET")
 	router.HandleFunc("/contact/create/", CreateContactEndpoint).Methods("POST")
-	router.HandleFunc("/contact/update/{id}", UpdateContactEndpoint).Methods("PUT")
+	router.HandleFunc("/contact/update/", UpdateContactEndpoint).Methods("POST")
 	router.HandleFunc("/contact/delete/{id}", DeleteContactEndpoint).Methods("DELETE")
 	router.HandleFunc("/contact/upload/", UploadContactsEndpoint).Methods("POST")
 	router.HandleFunc("/contact/download/", DownloadContactsEndpoint).Methods("POST")

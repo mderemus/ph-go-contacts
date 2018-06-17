@@ -91,16 +91,12 @@ func GetContactEndpoint(response http.ResponseWriter, request *http.Request) {
 
 // CreateContactEndpoint create a Contact
 func CreateContactEndpoint(response http.ResponseWriter, request *http.Request) {
-	/*
-		Todo:
-		1.) Get id of inserted - Done
-		2.) Pass id of inserted to contact detail - Done
-		3.) Check for duplicates of contacts - Done
-	*/
-	var contactReq ContactRequest
-	var contactDet []ContactDetail
-	var contact Contact
-	var conCheck []Contact
+	var (
+		contactReq ContactRequest
+		contactDet []ContactDetail
+		contact    Contact
+		conCheck   []Contact
+	)
 
 	if request.Body == nil {
 		http.Error(response, "Please send a request body", 400)
@@ -128,7 +124,6 @@ func CreateContactEndpoint(response http.ResponseWriter, request *http.Request) 
 
 		if len(contactDet) != 0 {
 			for k := range contactDet {
-				fmt.Println(contactDet[k].ContactInfo)
 				db.Create(&ContactDetail{ContactID: contact.ID, ContactTypeID: contactDet[k].ContactTypeID, ContactInfo: contactDet[k].ContactInfo, Active: true})
 			}
 		}
@@ -144,8 +139,62 @@ func CreateContactEndpoint(response http.ResponseWriter, request *http.Request) 
 
 // UpdateContactEndpoint get a Contact
 func UpdateContactEndpoint(response http.ResponseWriter, request *http.Request) {
-	response.WriteHeader(200)
-	response.Write([]byte("Update a Contact"))
+	var (
+		contactReq    ContactRequest
+		contactDetReq []ContactDetail
+		contact       Contact
+	)
+
+	if request.Body == nil {
+		http.Error(response, "Please send a request body", 400)
+		return
+	}
+	err := json.NewDecoder(request.Body).Decode(&contactReq)
+	if err != nil {
+		http.Error(response, err.Error(), 400)
+		return
+	}
+
+	contact.ID = contactReq.ID
+	contactDetReq = contactReq.ContactDetail
+
+	// Exist check
+	db.First(&contact).Where("id = ?", contactReq.ID)
+
+	if contact.ID > 0 {
+		if contactReq.FirstName != "" {
+			contact.FirstName = contactReq.FirstName
+		}
+		if contactReq.LastName != "" {
+			contact.LastName = contactReq.LastName
+		}
+
+		db.Save(&contact)
+
+		if len(contactDetReq) != 0 {
+			for k := range contactDetReq {
+				contactDet := ContactDetail{}
+
+				db.First(&contactDet, "id = ?", contactDetReq[k].ID)
+
+				if contactDetReq[k].ContactInfo != "" {
+					contactDet.ContactInfo = contactDetReq[k].ContactInfo
+				}
+				if contactDetReq[k].Active != contactDet.Active {
+					contactDet.Active = contactDetReq[k].Active
+				}
+
+				db.Save(&contactDet)
+			}
+		}
+
+		response.WriteHeader(200)
+		response.Write([]byte("Contact Updated"))
+	} else {
+		response.WriteHeader(400)
+		response.Write([]byte("User not found"))
+	}
+
 }
 
 // DeleteContactEndpoint get a Contact
