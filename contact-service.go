@@ -199,8 +199,22 @@ func UpdateContactEndpoint(response http.ResponseWriter, request *http.Request) 
 
 // DeleteContactEndpoint get a Contact
 func DeleteContactEndpoint(response http.ResponseWriter, request *http.Request) {
-	response.WriteHeader(200)
-	response.Write([]byte("Delete a Contact"))
+	var contact Contact
+	params := mux.Vars(request)
+
+	// Get Contact to delete
+	db.Where("id = ?", params["id"]).First(&contact)
+
+	// Make sure contact exists
+	if contact.ID > 0 {
+		db.Delete(&contact)
+		response.WriteHeader(200)
+		response.Write([]byte("Deleted Contact"))
+	} else {
+		response.WriteHeader(400)
+		response.Write([]byte("Contact not found"))
+	}
+
 }
 
 // UploadContactsEndpoint get a Contact
