@@ -113,14 +113,11 @@ An example of the request data should look like this:
                     "ID": 4,
                     "ContactID": 13,
                     "ContactTypeID": 1,
-                    "ContactInfo": "garybusey@gmail.com",
+                    "ContactInfo": "garybusey@gmails.com",
                     "Active": true
                 },
                 {
                     "ID": 5,
-                    "CreatedAt": "2018-06-16T17:22:45.017422-05:00",
-                    "UpdatedAt": "2018-06-16T17:22:45.017422-05:00",
-                    "DeletedAt": null,
                     "ContactID": 13,
                     "ContactTypeID": 2,
                     "ContactInfo": "955-469-1234",
@@ -133,7 +130,7 @@ If Successful, it will return a message to the user "Contact Updated" as well as
 
 ## Delete A Contact
 
-The following endpoint will be used to retrieve all of the contacts
+The following endpoint will be used to delete a specific Contact with the matching {id}
 
     http://localhost:12344/contact/delete/{id}
 
