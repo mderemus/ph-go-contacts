@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	server   = "DESKTOP-PO84PUU"
+	server   = "localhost"
 	port     = 1433
 	user     = "PHContacts"
 	password = "PHContacts"
