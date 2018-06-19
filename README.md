@@ -6,7 +6,7 @@ This application was intended to fulfill a need to create, read, update, and del
 - Last Name
 - Email Address
 - Phone Number
- 
+
 The design was modeled after how maybe the Contacts application on your mobile phone would work. I wanted to provide flexibility in that a Contact could have multiple means of communication, i.e. several emails and perhaps more than one phone number. With that that in mind, I designed the database with the details laid out in the next section.
 
 ## Database
@@ -29,7 +29,7 @@ I used Postman for testing as well as manually hitting the API address in Chrome
 
 ## Create Contact
 
-This creates a Contact and inserts the appropriate Contact Details if present. It also checks for duplicates and responds appropriately. 
+This creates a Contact and inserts the appropriate Contact Details if present. It also checks for duplicates and responds appropriately.
 
 `http://localhost:12344/contact/create/`
 
@@ -42,8 +42,8 @@ This creates a Contact and inserts the appropriate Contact Details if present. I
           "contactinfo": "lalal@go.com"
         },
         {
-        	"contacttypeid": 2,
-        	"contactinfo": "333-554-7834"
+            "contacttypeid": 2,
+            "contactinfo": "333-554-7834"
         }
       ]
     }
@@ -57,7 +57,6 @@ The following endpoint will be used to retrieve all of the contacts
     http://localhost:12344/contact
 
 Which, if successful, the call will return JSON to the user in the following format as well as a Status 200 OK
-
 
     {
             "ID": 13,
@@ -104,7 +103,6 @@ The following endpoint will be used to update a single Contact
 
 An example of the request data should look like this:
 
-
     {
             "ID": 13,
             "FirstName": "Gary",
@@ -134,8 +132,7 @@ The following endpoint will be used to delete a specific Contact with the matchi
 
     http://localhost:12344/contact/delete/{id}
 
-
-# To Do:
+## To Do
 
 Not necessarily in this order
 

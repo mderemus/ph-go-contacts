@@ -32,6 +32,14 @@ type Contact struct {
 	ContactDetails []ContactDetail `gorm:"foreignkey:ContactID"`
 }
 
+// ImportContact struct: Format of imported contacts
+type ImportContact struct {
+	FirstName   string
+	LastName    string
+	ContactType string
+	ContactInfo string
+}
+
 // ContactRequest struct: Like a view model
 type ContactRequest struct {
 	gorm.Model
@@ -64,7 +72,7 @@ type CDetails []ContactDetail
 
 // RootEndpoint gets a root
 func RootEndpoint(response http.ResponseWriter, request *http.Request) {
-	response.WriteHeader(200)
+	response.WriteHeader(http.StatusOK)
 	response.Write([]byte("Hello Root"))
 }
 
@@ -88,7 +96,7 @@ func GetContactEndpoint(response http.ResponseWriter, request *http.Request) {
 	db.Preload("ContactDetails", "contact_id = ?", params["id"]).Find(&contact)
 
 	response.Header().Set("Content-Type", "application/json")
-	response.WriteHeader(200)
+	response.WriteHeader(http.StatusOK)
 	json.NewEncoder(response).Encode(&contact)
 }
 
@@ -131,7 +139,7 @@ func CreateContactEndpoint(response http.ResponseWriter, request *http.Request) 
 			}
 		}
 
-		response.WriteHeader(200)
+		response.WriteHeader(http.StatusOK)
 		response.Write([]byte("Contact Created"))
 	} else {
 		response.WriteHeader(400)
@@ -191,7 +199,7 @@ func UpdateContactEndpoint(response http.ResponseWriter, request *http.Request) 
 			}
 		}
 
-		response.WriteHeader(200)
+		response.WriteHeader(http.StatusOK)
 		response.Write([]byte("Contact Updated"))
 	} else {
 		response.WriteHeader(400)
@@ -211,7 +219,7 @@ func DeleteContactEndpoint(response http.ResponseWriter, request *http.Request) 
 	// Make sure contact exists
 	if contact.ID > 0 {
 		db.Delete(&contact)
-		response.WriteHeader(200)
+		response.WriteHeader(http.StatusOK)
 		response.Write([]byte("Deleted Contact"))
 	} else {
 		response.WriteHeader(400)
@@ -229,27 +237,28 @@ func UploadContactsEndpoint(response http.ResponseWriter, request *http.Request)
 	defer csvFile.Close()
 	//reader := csv.NewReader(bufio.NewReader(csvFile))
 
-	contacts := []*Contact{}
+	imported := []*ImportContact{}
 
-	if err := gocsv.UnmarshalFile(csvFile, &contacts); err != nil { // Load contacts from file
+	if err := gocsv.UnmarshalFile(csvFile, &imported); err != nil { // Load contacts from file
 		panic(err)
 	}
-	for _, contact := range contacts {
-		fmt.Println("Hello", contact.FirstName)
+	for _, imp := range imported {
+		// Loop thru and add Contact & ContactDetails
+		fmt.Println("Hello", imp.FirstName, " ", imp.LastName, ", ", imp.ContactType, ", ", imp.ContactInfo)
 	}
 
 	if _, err := csvFile.Seek(0, 0); err != nil { // Go to the start of the file
 		panic(err)
 	}
 
-	csvContent, err := gocsv.MarshalString(&contacts) // Get all contacts as CSV string
+	csvContent, err := gocsv.MarshalString(&imported) // Get all contacts as CSV string
 
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println(csvContent) // Display all contacts as CSV string
 
-	response.WriteHeader(200)
+	response.WriteHeader(http.StatusOK)
 	response.Write([]byte(csvContent))
 }
 
@@ -262,28 +271,20 @@ func DownloadContactsEndpoint(response http.ResponseWriter, request *http.Reques
 	defer csvFile.Close()
 	//reader := csv.NewReader(bufio.NewReader(csvFile))
 
-	contacts := []*Contact{}
-
-	if err := gocsv.UnmarshalFile(csvFile, &contacts); err != nil { // Load contacts from file
-		panic(err)
-	}
-	for _, contact := range contacts {
-		fmt.Println("Hello", contact.FirstName)
-	}
-
-	if _, err := csvFile.Seek(0, 0); err != nil { // Go to the start of the file
-		panic(err)
-	}
+	var contacts []Contact
 
 	db.Where("deleted_at is NULL").Preload("ContactDetails").Find(&contacts)
+	fmt.Println(&contacts)
 
-	csvContent, err := gocsv.MarshalString(&contacts) // Get all contacts as CSV string
-	err = gocsv.MarshalFile(&contacts, csvFile)       // Use this to save the CSV back to the file
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(csvContent) // Display all contacts as CSV string
+	// Need to loop over and probably display a contact row for each contact info or maybe append to the end
+
+	// csvContent, err := gocsv.MarshalString(&contacts) // Get all contacts as CSV string
+	// err = gocsv.MarshalFile(&contacts, csvFile)       // Use this to save the CSV back to the file
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// fmt.Println(csvContent) // Display all contacts as CSV string
 
 	response.WriteHeader(200)
-	response.Write([]byte(csvContent))
+	//response.Write([]byte(csvContent))
 }
